@@ -375,7 +375,7 @@ class Restoration(object):
             st = varsdict[a]
             if st < 0.5:
                 open_s.append(k)        
-        with open('load_shed.txt', 'w') as f:
+        with open('load_curtail.txt', 'w') as f:
             json.dump(open_s, f)
         
 def _main():
