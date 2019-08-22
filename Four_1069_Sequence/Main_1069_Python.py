@@ -15,9 +15,6 @@ start = time.clock()
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-
-
 class Restoration_Sequence(object):
     """
     WSU Resilient Restoration Sequence of Switches
@@ -31,7 +28,7 @@ class Restoration_Sequence(object):
         # Parameters
         nNodes=1317
         nEdges=1327
-        f = open('load_shed.txt', 'rb')
+        f = open('load_curtail.txt', 'rb')
         obj = json.load(f)
         f.close()
         edges = np.loadtxt('edges.txt') 
@@ -42,7 +39,7 @@ class Restoration_Sequence(object):
         con_ind = np.loadtxt('config.txt')
         mult = -100*(demand[:,1]+demand[:,3]+demand[:,5])
         M = 3000
-        T = 7
+        T = 11
 
         # Different variables for optimization function
         vi = LpVariable.dicts("v_i", ((i, t) for i in range(nNodes) for t in range(T)), lowBound=0, upBound=1, cat='Binary')
@@ -65,6 +62,7 @@ class Restoration_Sequence(object):
 
         # Optimization problem objective definitions
         prob = LpProblem("Resilient Restoration",LpMinimize)
+        
         # Maximize the power flow from feeder at each restoration sequence
         Fed = [266, 595, 924, 1253]
         prob += -lpSum(Pija[Fed[k],t]  for k in range(len(Fed)) for t in range(T)) -\
@@ -332,20 +330,20 @@ class Restoration_Sequence(object):
 
         # Following switches are never closed in sequence. First one is fault isolation switch 
         # and remaining are tie switches and DG switch 
-        Status = [1227, 1316, 1318, 1319, 1323, 1324, 1325, 1326]
+        Status = [924, 1318, 1323, 1324, 1325, 1326]
         nStatus = Status.__len__()
         for t in range(T):
             for k in range (0, nStatus):
                 prob += xij[Status[k],t] == 0
         
         # Following switches need to change their status in every time step to reach the final state.
-        sec = [573, 913, 1240]
-        tie = [1317, 1320, 1321, 1322]
+        sec = [568, 584, 734, 909, 1240]
+        tie = [1316, 1317, 1319, 1320, 1321, 1322]
         
         # Number of switching actions for each time step to be 1
         for t in range(1, T):
-            prob += (xij[573,t-1]-xij[573,t]) + (xij[913,t-1]-xij[913,t]) + (xij[1240,t-1]-xij[1240,t]) +\
-                (xij[1317,t]-xij[1317,t-1]) + (xij[1320,t]-xij[1320,t-1]) + (xij[1321,t]-xij[1321,t-1]) + (xij[1322,t]-xij[1322,t-1]) == 1
+            prob += (xij[568,t-1]-xij[568,t]) + (xij[584,t-1]-xij[584,t]) + (xij[734,t-1]-xij[734,t]) + (xij[909,t-1]-xij[909,t]) + (xij[1240,t-1]-xij[1240,t]) +\
+                (xij[1316,t]-xij[1316,t-1]) + (xij[1317,t]-xij[1317,t-1]) + (xij[1319,t]-xij[1320,t-1]) + (xij[1320,t]-xij[1320,t-1]) + (xij[1321,t]-xij[1321,t-1]) + (xij[1322,t]-xij[1322,t-1]) == 1
         
         # Switches status cannot be reversed as it takes time to operate
         for t in range(1, T):
@@ -357,29 +355,33 @@ class Restoration_Sequence(object):
                 prob += (xij[tie[k],t] >= xij[tie[k],t-1])
 
         # At end they should reach the status given by restoration problem        
-        prob += xij[573,T-1] == 0
-        prob += xij[913,T-1] == 0
+        prob += xij[568,T-1] == 0
+        prob += xij[584,T-1] == 0
+        prob += xij[734,T-1] == 0
+        prob += xij[909,T-1] == 0
         prob += xij[1240,T-1] == 0
+        prob += xij[1316,T-1] == 1
         prob += xij[1317,T-1] == 1
+        prob += xij[1319,T-1] == 1
         prob += xij[1320,T-1] == 1
         prob += xij[1321,T-1] == 1
         prob += xij[1322,T-1] == 1
         
         # Write load switch status as we obtain from restoration problem
         nobj = obj.__len__()
-        for t in range(T-1, T):
+        for t in range(T):
             for k in range (0, nobj):
                 prob += si[obj[k],t] == 0
 
         # Freezing the remaining switches which donot take part in the restoration problem to be 1
-        Status=[573, 913, 1240, 1227, 1316, 1317, 1318, 1319, 1320, 1321, 1322, 1323, 1324, 1325, 1326]
+        Status=[568, 584, 734, 909, 924, 1240, 1316, 1317, 1318, 1319, 1320, 1321, 1322, 1323, 1324, 1325, 1326]
         for t in range(T):
             for k in range (nEdges):
                 if k not in Status:
                     prob += xij[k,t] == 1
 
-        # prob.solve(CPLEX(msg=1, options=['set mip tolerances mipgap 0.0025']))
-        prob.solve(CPLEX(msg=1))
+        prob.solve(CPLEX(msg=1, options=['set mip tolerances mipgap 0.0025']))
+        # prob.solve(CPLEX(msg=1))
         print ("Status:", LpStatus[prob.status])
 
         varsdict = {}
