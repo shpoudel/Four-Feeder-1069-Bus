@@ -448,7 +448,8 @@ class Restoration_Sequence(object):
             print (loss)
         
         print (lossT)
-        plt.plot(lossT)
+        x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+        plt.step(x, lossT)
         plt.show()
 
 def _main():
