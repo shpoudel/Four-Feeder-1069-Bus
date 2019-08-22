@@ -379,7 +379,7 @@ class Restoration(object):
             json.dump(open_s, f)
         
 def _main():
-    fault = [1227] #924
+    fault = [924] #1227
     RR = Restoration(fault)
     RR.restoration()
 
