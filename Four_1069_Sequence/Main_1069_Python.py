@@ -343,7 +343,7 @@ class Restoration_Sequence(object):
         # Number of switching actions for each time step to be 1
         for t in range(1, T):
             prob += (xij[568,t-1]-xij[568,t]) + (xij[584,t-1]-xij[584,t]) + (xij[734,t-1]-xij[734,t]) + (xij[909,t-1]-xij[909,t]) + (xij[1240,t-1]-xij[1240,t]) +\
-                (xij[1316,t]-xij[1316,t-1]) + (xij[1317,t]-xij[1317,t-1]) + (xij[1319,t]-xij[1320,t-1]) + (xij[1320,t]-xij[1320,t-1]) + (xij[1321,t]-xij[1321,t-1]) + (xij[1322,t]-xij[1322,t-1]) == 1
+                (xij[1316,t]-xij[1316,t-1]) + (xij[1317,t]-xij[1317,t-1]) + (xij[1319,t]-xij[1319,t-1]) + (xij[1320,t]-xij[1320,t-1]) + (xij[1321,t]-xij[1321,t-1]) + (xij[1322,t]-xij[1322,t-1]) == 1
         
         # Switches status cannot be reversed as it takes time to operate
         for t in range(1, T):
@@ -367,11 +367,16 @@ class Restoration_Sequence(object):
         prob += xij[1321,T-1] == 1
         prob += xij[1322,T-1] == 1
         
+        # Once a load is picked, it cannot be shed
+        for t in range(1, T):
+            for k in range (nNodes):
+                prob += si[k,t] >= si[k,t-1]
+
         # Write load switch status as we obtain from restoration problem
-        nobj = obj.__len__()
-        for t in range(T):
-            for k in range (0, nobj):
-                prob += si[obj[k],t] == 0
+        # nobj = obj.__len__()
+        # for t in range(T):
+        #     for k in range (0, nobj):
+        #         prob += si[obj[k],t] == 0
 
         # Freezing the remaining switches which donot take part in the restoration problem to be 1
         Status=[568, 584, 734, 909, 924, 1240, 1316, 1317, 1318, 1319, 1320, 1321, 1322, 1323, 1324, 1325, 1326]
@@ -380,6 +385,7 @@ class Restoration_Sequence(object):
                 if k not in Status:
                     prob += xij[k,t] == 1
 
+        # Solve the optimization problem
         prob.solve(CPLEX(msg=1, options=['set mip tolerances mipgap 0.0025']))
         # prob.solve(CPLEX(msg=1))
         print ("Status:", LpStatus[prob.status])

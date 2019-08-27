@@ -292,9 +292,9 @@ class Restoration(object):
         # Cap = [1500, 710, 526, 710] 
         Cap = [0, 0, 0, 0]
         for k in range(0,4):
-            prob += Pija[DG[k]]<=Cap[k]
-            prob += Pijb[DG[k]]<=Cap[k]
-            prob += Pijc[DG[k]]<=Cap[k]
+            prob += Pija[DG[k]] <= Cap[k]
+            prob += Pijb[DG[k]] <= Cap[k]
+            prob += Pijc[DG[k]] <= Cap[k]
 
         # Enforce radial constraints
         nC = loops.__len__()
@@ -306,7 +306,7 @@ class Restoration(object):
        
         # Insert fault in the system
         F = self.fault
-        nF=1
+        nF = 1
         for k in range(0, nF):
             prob += xij[F[k]] == 0
 
@@ -379,7 +379,7 @@ class Restoration(object):
             json.dump(open_s, f)
         
 def _main():
-    fault = [924] #1227
+    fault = [260]# [924] #1227
     RR = Restoration(fault)
     RR.restoration()
 
