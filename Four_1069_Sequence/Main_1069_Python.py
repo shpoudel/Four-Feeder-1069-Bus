@@ -40,7 +40,6 @@ class Restoration_Sequence(object):
         LineData = np.loadtxt('Line_Config.txt')
         sw_ind = np.loadtxt('sw_ind.txt')
         con_ind = np.loadtxt('config.txt')
-        mult = -100*(demand[:,1]+demand[:,3]+demand[:,5])
         M = 3000
         T = 7
 
@@ -67,9 +66,10 @@ class Restoration_Sequence(object):
         prob = LpProblem("Resilient Restoration",LpMinimize)
         # Maximize the power flow from feeder at each restoration sequence
         Fed = [266, 595, 924, 1253]
-        prob += -lpSum(Pija[Fed[k],t]  for k in range(len(Fed)) for t in range(T)) -\
-                lpSum(Pijb[Fed[k],t]  for k in range(len(Fed)) for t in range(T)) -\
-                lpSum(Pijc[Fed[k],t]  for k in range(len(Fed)) for t in range(T))
+        print(Fed.__len__())
+        prob += -lpSum(Pija[Fed[k],t]  for k in range(Fed.__len__()) for t in range(T)) -\
+                 lpSum(Pijb[Fed[k],t]  for k in range(Fed.__len__()) for t in range(T)) -\
+                 lpSum(Pijc[Fed[k],t]  for k in range(Fed.__len__()) for t in range(T))
 
         # Constraints (v_i<=1)
         for t in range (T):
@@ -201,39 +201,40 @@ class Restoration_Sequence(object):
                 prob += Qijc[sw_ind[k],t] >= -M * xij0[sw_ind[k],t] 
 
         # # Voltage constraints using big-M method
-        # base_Z=12.47**2/3
-        # M=4
-        # unit=5280
-        # # Phase A
-        # for k in range(0, nEdges):
-        #     len=LineData[int(con_ind[k]),2]
-        #     conf=LineData[int(con_ind[k]),4]
-        #     r_aa,x_aa,r_ab,x_ab,r_ac,x_ac = zma.Zmatrixa(conf)
-        #     line=[edges[k,0], edges[k,1]]
-        #     if (k) in sw_ind:
-        #         prob += Via[int(line[0])-1]-Via[int(line[1])-1] - \
-        #         2*r_aa*len/(unit*base_Z*1000)*Pija[k]- \
-        #         2*x_aa*len/(unit*base_Z*1000)*Qija[k]+ \
-        #         (r_ab+np.sqrt(3)*x_ab)*len/(unit*base_Z*1000)*Pijb[k] +\
-        #         (x_ab-np.sqrt(3)*r_ab)*len/(unit*base_Z*1000)*Qijb[k] +\
-        #         (r_ac-np.sqrt(3)*x_ac)*len/(unit*base_Z*1000)*Pijc[k] +\
-        #         (x_ac+np.sqrt(3)*r_ac)*len/(unit*base_Z*1000)*Qijc[k]-M*(1-xij[k]) <=0
-        #         # Another inequality        
-        #         prob += Via[int(line[0])-1]-Via[int(line[1])-1] - \
-        #         2*r_aa*len/(unit*base_Z*1000)*Pija[k]- \
-        #         2*x_aa*len/(unit*base_Z*1000)*Qija[k]+ \
-        #         (r_ab+np.sqrt(3)*x_ab)*len/(unit*base_Z*1000)*Pijb[k] +\
-        #         (x_ab-np.sqrt(3)*r_ab)*len/(unit*base_Z*1000)*Qijb[k] +\
-        #         (r_ac-np.sqrt(3)*x_ac)*len/(unit*base_Z*1000)*Pijc[k] +\
-        #         (x_ac+np.sqrt(3)*r_ac)*len/(unit*base_Z*1000)*Qijc[k]+M*(1-xij[k]) >=0
-        #     else: 
-        #         prob += Via[int(line[0])-1]-Via[int(line[1])-1] - \
-        #         2*r_aa*len/(unit*base_Z*1000)*Pija[k]- \
-        #         2*x_aa*len/(unit*base_Z*1000)*Qija[k]+ \
-        #         (r_ab+np.sqrt(3)*x_ab)*len/(unit*base_Z*1000)*Pijb[k] +\
-        #         (x_ab-np.sqrt(3)*r_ab)*len/(unit*base_Z*1000)*Qijb[k] +\
-        #         (r_ac-np.sqrt(3)*x_ac)*len/(unit*base_Z*1000)*Pijc[k] +\
-        #         (x_ac+np.sqrt(3)*r_ac)*len/(unit*base_Z*1000)*Qijc[k]==0
+        base_Z = 12.47**2/3
+        M = 4
+        unit = 5280
+        # Phase A
+        for t in range(T):
+            for k in range(0, nEdges):
+                len = LineData[int(con_ind[k]),2]
+                conf = LineData[int(con_ind[k]),4]
+                r_aa,x_aa,r_ab,x_ab,r_ac,x_ac = zma.Zmatrixa(conf)
+                line = [edges[k,0], edges[k,1]]
+                if (k) in sw_ind:
+                    prob += Via[int(line[0])-1,t]-Via[int(line[1])-1,t] - \
+                    2*r_aa*len/(unit*base_Z*1000)*Pija[k,t]- \
+                    2*x_aa*len/(unit*base_Z*1000)*Qija[k,t]+ \
+                    (r_ab+np.sqrt(3)*x_ab)*len/(unit*base_Z*1000)*Pijb[k,t] +\
+                    (x_ab-np.sqrt(3)*r_ab)*len/(unit*base_Z*1000)*Qijb[k,t] +\
+                    (r_ac-np.sqrt(3)*x_ac)*len/(unit*base_Z*1000)*Pijc[k,t] +\
+                    (x_ac+np.sqrt(3)*r_ac)*len/(unit*base_Z*1000)*Qijc[k,t]-M*(1-xij[k,t]) <= 0
+                    # Another inequality        
+                    prob += Via[int(line[0])-1,t]-Via[int(line[1])-1,t] - \
+                    2*r_aa*len/(unit*base_Z*1000)*Pija[k,t]- \
+                    2*x_aa*len/(unit*base_Z*1000)*Qija[k,t]+ \
+                    (r_ab+np.sqrt(3)*x_ab)*len/(unit*base_Z*1000)*Pijb[k,t] +\
+                    (x_ab-np.sqrt(3)*r_ab)*len/(unit*base_Z*1000)*Qijb[k,t] +\
+                    (r_ac-np.sqrt(3)*x_ac)*len/(unit*base_Z*1000)*Pijc[k,t] +\
+                    (x_ac+np.sqrt(3)*r_ac)*len/(unit*base_Z*1000)*Qijc[k,t]+M*(1-xij[k,t]) >= 0
+                else: 
+                    prob += Via[int(line[0])-1,t]-Via[int(line[1])-1,t] - \
+                    2*r_aa*len/(unit*base_Z*1000)*Pija[k,t]- \
+                    2*x_aa*len/(unit*base_Z*1000)*Qija[k,t]+ \
+                    (r_ab+np.sqrt(3)*x_ab)*len/(unit*base_Z*1000)*Pijb[k,t] +\
+                    (x_ab-np.sqrt(3)*r_ab)*len/(unit*base_Z*1000)*Qijb[k,t] +\
+                    (r_ac-np.sqrt(3)*x_ac)*len/(unit*base_Z*1000)*Pijc[k,t] +\
+                    (x_ac+np.sqrt(3)*r_ac)*len/(unit*base_Z*1000)*Qijc[k,t] == 0
 
         # # Phase B
         # for k in range(0, nEdges):
@@ -296,8 +297,9 @@ class Restoration_Sequence(object):
         #         (x_ca-np.sqrt(3)*r_ca)*len/(unit*base_Z*1000)*Qija[k] +\
         #         (r_cb-np.sqrt(3)*x_cb)*len/(unit*base_Z*1000)*Pijb[k] +\
         #         (x_cb+np.sqrt(3)*r_cb)*len/(unit*base_Z*1000)*Qijb[k] ==0
-             
-        # prob += Via[1316] == 1.1
+
+        for t in range(T):
+            prob += Via[1316, t] == 1.1
         # prob += Vib[1316] == 1.1
         # prob += Vic[1316] == 1.1
 
@@ -349,11 +351,11 @@ class Restoration_Sequence(object):
         
         # Switches status cannot be reversed as it takes time to operate
         for t in range(1, T):
-            for k in range(len(sec)):
+            for k in range(sec.__len__()):
                 prob += (xij[sec[k],t-1] >= xij[sec[k],t])
 
         for t in range(1, T):
-            for k in range(len(tie)):
+            for k in range(tie.__len__()):
                 prob += (xij[tie[k],t] >= xij[tie[k],t-1])
 
         # At end they should reach the status given by restoration problem        
@@ -365,11 +367,16 @@ class Restoration_Sequence(object):
         prob += xij[1321,T-1] == 1
         prob += xij[1322,T-1] == 1
         
-        # Write load switch status as we obtain from restoration problem
-        nobj = obj.__len__()
-        for t in range(T-1, T):
-            for k in range (0, nobj):
-                prob += si[obj[k],t] == 0
+        # Loads once picked cannot be again shed in the restoration problem
+        for t in range(1, T):
+            for k in range (nNodes):
+                prob += si[k,t] >= si[k,t-1]
+
+        # # Write load switch status as we obtain from restoration problem
+        # nobj = obj.__len__()
+        # for t in range(T-1, T):
+        #     for k in range (0, nobj):
+        #         prob += si[obj[k],t] == 0
 
         # Freezing the remaining switches which donot take part in the restoration problem to be 1
         Status=[573, 913, 1240, 1227, 1316, 1317, 1318, 1319, 1320, 1321, 1322, 1323, 1324, 1325, 1326]
@@ -387,7 +394,7 @@ class Restoration_Sequence(object):
             varsdict[v.name] = v.varValue
 
         # See the switch status
-        for k in range(len(sec)):   
+        for k in range(sec.__len__()):   
             sw_status = []  
             for var in xij:   
                 if var[0] == sec[k]:             
@@ -395,7 +402,7 @@ class Restoration_Sequence(object):
                     sw_status.append(var_value)
             print(sec[k], sw_status)    
 
-        for k in range(len(tie)):   
+        for k in range(tie.__len__()):   
             sw_status = []  
             for var in xij:   
                 if var[0] == tie[k]:             
@@ -405,7 +412,7 @@ class Restoration_Sequence(object):
 
         # See the Feeder flow
         Feda = []
-        for k in range(len(Fed)):   
+        for k in range(Fed.__len__()):   
             FlowPa = [] 
             for var in Pija:   
                 if var[0] == Fed[k]:             
@@ -415,7 +422,7 @@ class Restoration_Sequence(object):
             print(FlowPa)
 
         Fedb = []
-        for k in range(len(Fed)):   
+        for k in range(Fed.__len__()):   
             FlowPb = []     
             for var in Pijb:   
                 if var[0] == Fed[k]:             
@@ -425,7 +432,7 @@ class Restoration_Sequence(object):
             print(FlowPb)
 
         Fedc = []
-        for k in range(len(Fed)):   
+        for k in range(Fed.__len__()):   
             FlowPc = []     
             for var in Pijc:   
                 if var[0] == Fed[k]:             
@@ -439,7 +446,7 @@ class Restoration_Sequence(object):
         lossT= []
         for t in range(T):
             supplied = 0.
-            for i in range(len(Fed)):
+            for i in range(Fed.__len__()):
                 supplied += Feda[i][t] + Fedb[i][t] + Fedc[i][t]
             loss = Tot_P - supplied
             lossT.append(loss)
@@ -449,6 +456,7 @@ class Restoration_Sequence(object):
         x = [0, 1, 2, 3, 4, 5, 6]
         plt.step(x,lossT)
         plt.show()
+        
 
 def _main():
     RR = Restoration_Sequence()
