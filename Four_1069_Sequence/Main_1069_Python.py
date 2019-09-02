@@ -236,72 +236,74 @@ class Restoration_Sequence(object):
                     (r_ac-np.sqrt(3)*x_ac)*len/(unit*base_Z*1000)*Pijc[k,t] +\
                     (x_ac+np.sqrt(3)*r_ac)*len/(unit*base_Z*1000)*Qijc[k,t] == 0
 
-        # # Phase B
-        # for k in range(0, nEdges):
-        #     len = LineData[int(con_ind[k]),2]
-        #     conf = LineData[int(con_ind[k]),4]
-        #     line = [edges[k,0], edges[k,1]]
-        #     r_bb,x_bb,r_ba,x_ba,r_bc,x_bc = zmb.Zmatrixb(conf)
-        #     if (k) in sw_ind:
-        #         prob += Vib[int(line[0])-1]-Vib[int(line[1])-1] - \
-        #         2*r_bb*len/(unit*base_Z*1000)*Pijb[k]- \
-        #         2*x_bb*len/(unit*base_Z*1000)*Qijb[k]+ \
-        #         (r_ba-np.sqrt(3)*x_ba)*len/(unit*base_Z*1000)*Pija[k] +\
-        #         (x_ba+np.sqrt(3)*r_ba)*len/(unit*base_Z*1000)*Qija[k] +\
-        #         (r_bc+np.sqrt(3)*x_bc)*len/(unit*base_Z*1000)*Pijc[k] +\
-        #         (x_bc-np.sqrt(3)*r_bc)*len/(unit*base_Z*1000)*Qijc[k] -M*(1-xij[k]) <=0
-        #         # Another inequality
-        #         prob += Vib[int(line[0])-1]-Vib[int(line[1])-1] - \
-        #         2*r_bb*len/(unit*base_Z*1000)*Pijb[k]- \
-        #         2*x_bb*len/(unit*base_Z*1000)*Qijb[k]+ \
-        #         (r_ba-np.sqrt(3)*x_ba)*len/(unit*base_Z*1000)*Pija[k] +\
-        #         (x_ba+np.sqrt(3)*r_ba)*len/(unit*base_Z*1000)*Qija[k] +\
-        #         (r_bc+np.sqrt(3)*x_bc)*len/(unit*base_Z*1000)*Pijc[k] +\
-        #         (x_bc-np.sqrt(3)*r_bc)*len/(unit*base_Z*1000)*Qijc[k] +M*(1-xij[k]) >=0
-        #     else:
-        #         prob += Vib[int(line[0])-1]-Vib[int(line[1])-1] - \
-        #         2*r_bb*len/(unit*base_Z*1000)*Pijb[k]- \
-        #         2*x_bb*len/(unit*base_Z*1000)*Qijb[k]+ \
-        #         (r_ba-np.sqrt(3)*x_ba)*len/(unit*base_Z*1000)*Pija[k] +\
-        #         (x_ba+np.sqrt(3)*r_ba)*len/(unit*base_Z*1000)*Qija[k] +\
-        #         (r_bc+np.sqrt(3)*x_bc)*len/(unit*base_Z*1000)*Pijc[k] +\
-        #         (x_bc-np.sqrt(3)*r_bc)*len/(unit*base_Z*1000)*Qijc[k] ==0
+        # Phase B
+        for t in range(T):
+            for k in range(0, nEdges):
+                len = LineData[int(con_ind[k]),2]
+                conf = LineData[int(con_ind[k]),4]
+                line = [edges[k,0], edges[k,1]]
+                r_bb,x_bb,r_ba,x_ba,r_bc,x_bc = zmb.Zmatrixb(conf)
+                if (k) in sw_ind:
+                    prob += Vib[int(line[0])-1,t]-Vib[int(line[1])-1,t] - \
+                    2*r_bb*len/(unit*base_Z*1000)*Pijb[k,t]- \
+                    2*x_bb*len/(unit*base_Z*1000)*Qijb[k,t]+ \
+                    (r_ba-np.sqrt(3)*x_ba)*len/(unit*base_Z*1000)*Pija[k,t] +\
+                    (x_ba+np.sqrt(3)*r_ba)*len/(unit*base_Z*1000)*Qija[k,t] +\
+                    (r_bc+np.sqrt(3)*x_bc)*len/(unit*base_Z*1000)*Pijc[k,t] +\
+                    (x_bc-np.sqrt(3)*r_bc)*len/(unit*base_Z*1000)*Qijc[k,t] -M*(1-xij[k,t]) <=0
+                    # Another inequality
+                    prob += Vib[int(line[0])-1,t]-Vib[int(line[1])-1,t] - \
+                    2*r_bb*len/(unit*base_Z*1000)*Pijb[k,t]- \
+                    2*x_bb*len/(unit*base_Z*1000)*Qijb[k,t]+ \
+                    (r_ba-np.sqrt(3)*x_ba)*len/(unit*base_Z*1000)*Pija[k,t] +\
+                    (x_ba+np.sqrt(3)*r_ba)*len/(unit*base_Z*1000)*Qija[k,t] +\
+                    (r_bc+np.sqrt(3)*x_bc)*len/(unit*base_Z*1000)*Pijc[k,t] +\
+                    (x_bc-np.sqrt(3)*r_bc)*len/(unit*base_Z*1000)*Qijc[k,t] +M*(1-xij[k,t]) >=0
+                else:
+                    prob += Vib[int(line[0])-1,t]-Vib[int(line[1])-1,t] - \
+                    2*r_bb*len/(unit*base_Z*1000)*Pijb[k,t]- \
+                    2*x_bb*len/(unit*base_Z*1000)*Qijb[k,t]+ \
+                    (r_ba-np.sqrt(3)*x_ba)*len/(unit*base_Z*1000)*Pija[k,t] +\
+                    (x_ba+np.sqrt(3)*r_ba)*len/(unit*base_Z*1000)*Qija[k,t] +\
+                    (r_bc+np.sqrt(3)*x_bc)*len/(unit*base_Z*1000)*Pijc[k,t] +\
+                    (x_bc-np.sqrt(3)*r_bc)*len/(unit*base_Z*1000)*Qijc[k,t] ==0
 
-        # # Phase C  
-        # for k in range(0, nEdges):
-        #     len = LineData[int(con_ind[k]),2]
-        #     conf = LineData[int(con_ind[k]),4]
-        #     r_cc,x_cc,r_ca,x_ca,r_cb,x_cb = zmc.Zmatrixc(conf)
-        #     line = [edges[k,0], edges[k,1]]
-        #     if (k) in sw_ind: 
-        #         prob += Vic[int(line[0])-1]-Vic[int(line[1])-1] - \
-        #         2*r_cc*len/(unit*base_Z*1000)*Pijc[k]- \
-        #         2*x_cc*len/(unit*base_Z*1000)*Qijc[k]+ \
-        #         (r_ca+np.sqrt(3)*x_ca)*len/(unit*base_Z*1000)*Pija[k] +\
-        #         (x_ca-np.sqrt(3)*r_ca)*len/(unit*base_Z*1000)*Qija[k] +\
-        #         (r_cb-np.sqrt(3)*x_cb)*len/(unit*base_Z*1000)*Pijb[k] +\
-        #         (x_cb+np.sqrt(3)*r_cb)*len/(unit*base_Z*1000)*Qijb[k] -M*(1-xij[k]) <=0
-        #         # Another inequality
-        #         prob += Vic[int(line[0])-1]-Vic[int(line[1])-1] - \
-        #         2*r_cc*len/(unit*base_Z*1000)*Pijc[k]- \
-        #         2*x_cc*len/(unit*base_Z*1000)*Qijc[k]+ \
-        #         (r_ca+np.sqrt(3)*x_ca)*len/(unit*base_Z*1000)*Pija[k] +\
-        #         (x_ca-np.sqrt(3)*r_ca)*len/(unit*base_Z*1000)*Qija[k] +\
-        #         (r_cb-np.sqrt(3)*x_cb)*len/(unit*base_Z*1000)*Pijb[k] +\
-        #         (x_cb+np.sqrt(3)*r_cb)*len/(unit*base_Z*1000)*Qijb[k] +M*(1-xij[k]) >=0
-        #     else:
-        #         prob += Vic[int(line[0])-1]-Vic[int(line[1])-1] - \
-        #         2*r_cc*len/(unit*base_Z*1000)*Pijc[k]- \
-        #         2*x_cc*len/(unit*base_Z*1000)*Qijc[k]+ \
-        #         (r_ca+np.sqrt(3)*x_ca)*len/(unit*base_Z*1000)*Pija[k] +\
-        #         (x_ca-np.sqrt(3)*r_ca)*len/(unit*base_Z*1000)*Qija[k] +\
-        #         (r_cb-np.sqrt(3)*x_cb)*len/(unit*base_Z*1000)*Pijb[k] +\
-        #         (x_cb+np.sqrt(3)*r_cb)*len/(unit*base_Z*1000)*Qijb[k] ==0
+        # Phase C 
+        for t in range(T): 
+            for k in range(0, nEdges):
+                len = LineData[int(con_ind[k]),2]
+                conf = LineData[int(con_ind[k]),4]
+                r_cc,x_cc,r_ca,x_ca,r_cb,x_cb = zmc.Zmatrixc(conf)
+                line = [edges[k,0], edges[k,1]]
+                if (k) in sw_ind: 
+                    prob += Vic[int(line[0])-1,t]-Vic[int(line[1])-1,t] - \
+                    2*r_cc*len/(unit*base_Z*1000)*Pijc[k,t]- \
+                    2*x_cc*len/(unit*base_Z*1000)*Qijc[k,t]+ \
+                    (r_ca+np.sqrt(3)*x_ca)*len/(unit*base_Z*1000)*Pija[k,t] +\
+                    (x_ca-np.sqrt(3)*r_ca)*len/(unit*base_Z*1000)*Qija[k,t] +\
+                    (r_cb-np.sqrt(3)*x_cb)*len/(unit*base_Z*1000)*Pijb[k,t] +\
+                    (x_cb+np.sqrt(3)*r_cb)*len/(unit*base_Z*1000)*Qijb[k,t] -M*(1-xij[k,t]) <=0
+                    # Another inequality
+                    prob += Vic[int(line[0])-1,t]-Vic[int(line[1])-1,t] - \
+                    2*r_cc*len/(unit*base_Z*1000)*Pijc[k,t]- \
+                    2*x_cc*len/(unit*base_Z*1000)*Qijc[k,t]+ \
+                    (r_ca+np.sqrt(3)*x_ca)*len/(unit*base_Z*1000)*Pija[k,t] +\
+                    (x_ca-np.sqrt(3)*r_ca)*len/(unit*base_Z*1000)*Qija[k,t] +\
+                    (r_cb-np.sqrt(3)*x_cb)*len/(unit*base_Z*1000)*Pijb[k,t] +\
+                    (x_cb+np.sqrt(3)*r_cb)*len/(unit*base_Z*1000)*Qijb[k,t] +M*(1-xij[k,t]) >=0
+                else:
+                    prob += Vic[int(line[0])-1,t]-Vic[int(line[1])-1,t] - \
+                    2*r_cc*len/(unit*base_Z*1000)*Pijc[k,t]- \
+                    2*x_cc*len/(unit*base_Z*1000)*Qijc[k,t]+ \
+                    (r_ca+np.sqrt(3)*x_ca)*len/(unit*base_Z*1000)*Pija[k,t] +\
+                    (x_ca-np.sqrt(3)*r_ca)*len/(unit*base_Z*1000)*Qija[k,t] +\
+                    (r_cb-np.sqrt(3)*x_cb)*len/(unit*base_Z*1000)*Pijb[k,t] +\
+                    (x_cb+np.sqrt(3)*r_cb)*len/(unit*base_Z*1000)*Qijb[k,t] ==0
 
         for t in range(T):
             prob += Via[1316, t] == 1.1
-        # prob += Vib[1316] == 1.1
-        # prob += Vic[1316] == 1.1
+            prob += Vib[1316, t] == 1.1
+            prob += Vic[1316, t] == 1.1
 
         # Enforce radial constraints
         nC = loops.__len__()
@@ -444,17 +446,21 @@ class Restoration_Sequence(object):
         print(Feda)
         Tot_P = sum(demand[:,1] + demand[:,3] + demand[:,5])
         lossT= []
+        restore = []
         for t in range(T):
             supplied = 0.
             for i in range(Fed.__len__()):
                 supplied += Feda[i][t] + Fedb[i][t] + Fedc[i][t]
             loss = Tot_P - supplied
             lossT.append(loss)
+            restore.append(supplied)
             print (loss)
         
         print (lossT)
         x = [0, 1, 2, 3, 4, 5, 6]
         plt.step(x,lossT)
+        plt.show()
+        plt.step(x,restore)
         plt.show()
         
 
